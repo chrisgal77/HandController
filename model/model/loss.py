@@ -12,10 +12,10 @@ class YOLOLoss(keras.Model):
         self.num_classes = num_classes
         self.no_object = 0.5
         self.coord = 5
-        
-        
+
     def call(self, predictions, targets):
-        predictions = tf.reshape(predictions, shape=(-1,self.split_size, self.split_size, self.num_classes + 5*self.num_boxes))
+        predictions = tf.reshape(predictions,
+                                 shape=(-1, self.split_size, self.split_size, self.num_classes + 5*self.num_boxes))
         
         
     

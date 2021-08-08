@@ -38,7 +38,7 @@ class CNNBlock(keras.Model):
         self.relu = layers.LeakyReLU(alpha=0.1)
         self.batch_norm = layers.BatchNormalization()
      
-    def call(self, x, training=False):
+    def call(self, x):
         x = self.padding(x)
         x = self.conv(x)
         x = self.batch_norm(x)

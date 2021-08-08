@@ -3,139 +3,80 @@ from tensorflow import keras
 from tensorflow.keras import layers, metrics
 from utils import iou as intersection_over_union
 from collections import Counter
+import numpy as np
 import os
 
 os.environ['TFF_CPP_MIN_LOG_LEVEL'] = '2'
 
-def mAP(iou_threshold, num_classes, preds, target):
-    result = []
-    
-    for class_ in range(num_classes):
-        
-        detections = []
-        ground_truth = []
-        
-        for detection in preds:
-            if detection[1] == class_:
-                detections.append(detection)
+def mAP(iou_threshold, num_classes, preds, targets):
+    """
+    Function calculates mean average precision basing on a given intersection
+    over union and number of classes.
+    Predictions have to be in such order [image_idx, class, prob, x1, y1, x2, y2]
+    :param iou_threshold:
+    :param num_classes:
+    :param preds:
+    :param targets:
+    :return:
+    """
 
-        for true_box in target:
-            if true_box[1] == class_:
-                ground_truth.append(true_box)
-        amount_bboxes = Counter(x[0] for x in ground_truth)
-        for key, value in amount_bboxes:
-            amount_bboxes[key] = tf.zeros(value)
-        detections.sort(key= lambda x: x[2], reverse=True)
-        true_positives = tf.zeros(len(detections))
-        false_positives = tf.zeros(len(detections))
-        
-        total_boxes = len(ground_truth)
-        
-        for idx, detection in enumerate(detections):
-            
-            ground_truth_by_idx = [box for box in ground_truth if box[0] == detection[0]]
-            num_ground_truths = len(ground_truth_by_idx)
+    mean_average_precision = []
+
+    for c in range(num_classes):
+
+        predictions = preds[preds[:, 1] == c]
+        predictions = (predictions[predictions[:, 2].argsort()])[::-1]
+        target = targets[targets[:, 1] == c]
+
+        amount_boxes = Counter([prediction[0] for prediction in predictions])
+
+        for key, value in amount_boxes.items():
+            amount_boxes[key] = np.zeros(value)
+
+        for pred_idx, prediction in enumerate(predictions):
+            ground_truth = target[target[:, 0] == prediction[0]]
+
+            all_correct = ground_truth.shape[0]
+
+            tp = np.zeros(predictions.shape[0])
+            fp = np.zeros(predictions.shape[0])
+
             best_iou = 0
-            
-            for i, gt in enumerate(ground_truth_by_idx):
-                iou = intersection_over_union(tf.constant(detection[3:]),
-                          tf.constant(gt[3:]))
-                
+
+            for gt_idx, gt in enumerate(ground_truth):
+                iou = intersection_over_union(
+                    prediction[3:],
+                    gt[3:]
+                )
+
                 if iou > best_iou:
                     best_iou = iou
-                    best_gt_idx = i
-            
+                    best_iou_idx = gt_idx
+
             if best_iou > iou_threshold:
-                if amount_bboxes[detection[0]][best_gt_idx] == 0:
-                    true_positives[idx] = 1
-                    amount_bboxes[detection[0]][best_gt_idx] = 1
+                if amount_boxes[prediction[0]][best_iou_idx] == 0:
+                    tp[pred_idx] = 1
+                    amount_boxes[prediction[0]][best_iou_idx] = 1
+
                 else:
-                    false_positives[idx] = 1
-            
+                    fp[pred_idx] = 0
+
             else:
-                false_positives[idx] = 1
-                
-        TP_sum = tf.math.reduce_sum(true_positives, axis=0, keepdims=True)
-        FP_sum = tf.math.reduce_sum(false_positives, axis=0, keepdims=True)
-        recalls = TP_sum / (total_boxes + 1e-6)
-        precisions = TP_sum / (TP_sum + FP_sum + 1e-6)
-        precisions = tf.concat(tf.constant([1]), precisions)
-        recalls = tf.concat(tf.constant([0]), recalls)
-        
-        print('elo')
+                fp[pred_idx] = 0
+
+        tp = np.cumsum(tp, axis=0)
+        fp = np.cumsum(fp, axis=0)
+
+        recall = tp / (all_correct + 1e-6)
+        recall = np.concatenate((np.array([0]), recall))
+        precision = tp / (tp + fp + 1e-6)
+        precision = np.concatenate((np.array([1]), precision))
+
+        mean_average_precision.append(np.trapz(precision, recall))
+
+    return sum(mean_average_precision) / len(mean_average_precision)
 
 
-
-class MeanAveragePrecision(metrics.Metric):
-    def __init__(self, iou_threshold, num_classes):
-        super(MeanAveragePrecision, self).__init__()
-        self.iou_threshold = iou_threshold
-        self.num_classes = num_classes
-        
-    def call(self, preds, target):
-        
-        # preds [idx, class, prob, x1, y1, x2, y2]
-        
-        result = []
-        
-        for class_ in range(self.num_classes):
-            
-            detections = []
-            ground_truth = []
-            
-            for detection in preds:
-                if detection[1] == class_:
-                    detections.append(detection)
-    
-            for true_box in target:
-                if true_box[1] == class_:
-                    ground_truth.append(true_box)
-
-            amount_bboxes = Counter(x[0] for x in ground_truth)
-            for key, value in amount_bboxes:
-                amount_bboxes[key] = tf.zeros(value)
-
-            detections.sort(key= lambda x: x[2], reverse=True)
-            true_positives = tf.zeros(len(detections))
-            false_positives = tf.zeros(len(detections))
-            
-            total_boxes = len(ground_truth)
-            
-            for idx, detection in enumerate(detections):
-                
-                ground_truth_by_idx = [box for box in ground_truth if box[0] == detection[0]]
-
-                num_ground_truths = len(ground_truth_by_idx)
-                best_iou = 0
-                
-                for i, gt in enumerate(ground_truth_by_idx):
-                    iou = intersection_over_union(tf.constant(detection[3:]),
-                              tf.constant(gt[3:]))
-                    
-                    if iou > best_iou:
-                        best_iou = iou
-                        best_gt_idx = i
-                
-                if best_iou > self.iou_threshold:
-                    if amount_bboxes[detection[0]][best_gt_idx] == 0:
-                        true_positives[idx] = 1
-                        amount_bboxes[detection[0]][best_gt_idx] = 1
-                    else:
-                        false_positives[idx] = 1
-                
-                else:
-                    false_positives[idx] = 1
-                    
-            TP_sum = tf.math.reduce_sum(true_positives, axis=0, keepdims=True)
-            FP_sum = tf.math.reduce_sum(false_positives, axis=0, keepdims=True)
-            recalls = TP_sum / (total_boxes + 1e-6)
-            precisions = TP_sum / (TP_sum + FP_sum + 1e-6)
-            precisions = tf.concat(tf.constant([1]), precisions)
-            recalls = tf.concat(tf.constant([0]), recalls)
-            
-            print('elo')
-            
-            
 if __name__ == "__main__":
-    a = MeanAveragePrecision(0.5, 10)
-    
+    test = np.array([[0, 0, 0.9, 0.2, 0.2, 0.2, 0.2], [1, 0, 0.2, 0.3, 0.3, 0.1, 0.1], [1, 0, 0.3, 0.3, 0.4, 0.2, 0.2], [2, 1, 0.7, 0.4, 0.4, 0.2, 0.2]])
+    a = mAP(0.6, 2, test, test)
