@@ -3,7 +3,7 @@ from tensorflow import keras
 from tensorflow.keras import layers, losses
 
 
-class YOLOLoss(keras.Model):
+class YOLOLoss(losses.Loss):
     def __init__(self, split_size, num_boxes, num_classes):
         super(YOLOLoss, self).__init__()
         self.mse = losses.MeanSquaredError(reduction=losses.Reduction.SUM)

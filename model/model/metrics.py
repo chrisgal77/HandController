@@ -137,5 +137,6 @@ class MeanAveragePrecision(metrics.Metric):
             
             
 if __name__ == "__main__":
-    a = MeanAveragePrecision(0.5, 10)
+    pass
+    #a = mAP()
     
