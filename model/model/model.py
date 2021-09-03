@@ -7,46 +7,59 @@ import os
 os.environ['TFF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
-architecture = [
-    (7, 64, 2, 3),
-    'maxpool',
-    (3, 192, 1, 1),
-    'maxpool',
-    (1, 128, 1, 0),
-    (3, 192, 1, 1),
-    (3, 192, 1, 0),
-    (3, 192, 1, 1),
-    'maxpool',
-    [4, (1, 256, 1, 0), (3, 512, 1, 1)],
-    (1, 512, 1, 0),
-    (3, 1024, 1, 1),
-    'maxpool',
-    [2, (1, 512, 1, 0), (3, 1024, 1, 1)],
-    (3, 1024, 1, 1),
-    (3, 1024, 2, 1),
-    (3, 1024, 1, 1),
-    (3, 1024, 1, 1),
-]
-
 class CNNBlock(keras.Model):
-    def __init__(self, kernel_size, filters, stride, padding):
+    def __init__(self, filters, kernel_size, stride, batch_norm=True):
         super(CNNBlock, self).__init__()
-        self.padding = layers.ZeroPadding2D(padding=padding)
         self.conv = layers.Conv2D(filters=filters,
                                   kernel_size=kernel_size,
                                   strides=stride)
         self.relu = layers.LeakyReLU(alpha=0.1)
-        self.batch_norm = layers.BatchNormalization()
+        self.use_bn = batch_norm
+        if batch_norm:
+            self.batch_norm = layers.BatchNormalization()
      
-    def call(self, x, training=False):
-        x = self.padding(x)
-        x = self.conv(x)
-        x = self.batch_norm(x)
+    def call(self, x):
+        x = self.batch_norm(self.conv(x)) if self.use_bn else self.conv(x)
         return self.relu(x)
    
+
+class ResidualBlock(keras.Model):
+    def __init__(self, channels, use = True, num_reps = 1):
+        super(ResidualBlock, self).__init__()
+        self.layers = keras.Sequential()
+        for _ in range(num_reps):
+            self.layers.add(
+                keras.Sequential([
+                    CNNBlock(channels//2, kernel_size=1, stride=1),
+                    CNNBlock(channels, kernel_size=3, stride=1)
+                ])
+            )
+        
+        self.use = use
+        
+    def call(self, x):
+        for layer in self.layers.layers:
+            x = layer(x) + x if self.use else layer(x)
+        
+        return x
+        
+
+class Scale(keras.Model):
+    def __init__(self, channels, num_classes):
+        super(Scale, self).__init__()
+        self.pred = keras.Sequential([
+            CNNBlock(channels, kernel_size=3, stride=1),
+            CNNBlock((num_classes+5)*3, batch_norm=False, kernel_size=1, stride=1)
+        ])
+        self.num_classes = num_classes
+        
+    def call(self, x):
+        return tf.transpose(tf.reshape(self.pred(x), (x.shape[0], 3, self.num_classes + 5, x.shape[2], x.shape[3])),
+                            perm=[0,1,3,4,2])
+    
         
 class YOLO(keras.Model):
-    def __init__(self, split_size, num_boxes, num_classes, architecture):
+    def __init__(self, num_classes, architecture):
         super(YOLO, self).__init__()
         self._build_network(architecture)
         self.classifier = keras.Sequential([
@@ -68,7 +81,7 @@ class YOLO(keras.Model):
             if isinstance(element, str):
                 self.convs.add(layers.MaxPooling2D(pool_size=2, strides=2))
                 
-            elif isinstance(element, list):
+            elif  isinstance(element, list):
                 n_times = element[0]
                 kernel_size1, filters1, stride1, padding1 = element[1]
                 kernel_size2, filters2, stride2, padding2 = element[2]
@@ -93,7 +106,9 @@ if __name__ == '__main__':
     x = conv(test)
     print('DONE')
     
-    yolo = YOLO(7, 2, 20, architecture)
+    
+    
+    #yolo = YOLO(7, 2, 20, architecture)
     test = tf.random.normal(shape=(2,448,448,3))
     
     x = yolo(test)

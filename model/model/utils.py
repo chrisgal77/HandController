@@ -2,11 +2,14 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import os
+import numpy as np
 
 
 os.environ['TFF_CPP_MIN_LOG_LEVEL'] = '2'
 
+
 def iou(box1, box2):
+
     x11 = box1[..., 0:1] - (box1[..., 2:3] / 2)
     y11 = box1[..., 1:2] - (box1[..., 3:4] / 2)
     x12 = box1[..., 0:1] + (box1[..., 2:3] / 2)
@@ -23,11 +26,11 @@ def iou(box1, box2):
 
     return tf.divide(intersection, union)
 
+
 def non_max_suppression(predictions, iou_threshold, prob_treshold):
-    # predictions is a list of bounding boxes where one bounding box is represented as follows [CLASS, PROB, X1, Y1, X2, Y2]
 
     boxes = [box for box in predictions if box[1] > prob_treshold]
-    boxes.sort(key= lambda x: x[1], reverse=True)
+    boxes.sort(key=lambda x: x[1], reverse=True)
     
     result = []
     
@@ -39,12 +42,13 @@ def non_max_suppression(predictions, iou_threshold, prob_treshold):
         
         result.append(highest_prob)
     
-    return result
- 
+    return np.array(result)
+
+
 if __name__ == '__main__':
     
-    test1 = tf.constant([1,1,2,2], dtype=tf.double)
-    test2 = tf.constant([2,2,2,2], dtype=tf.double)
+    test1 = tf.constant([1, 1, 2, 2], dtype=tf.double)
+    test2 = tf.constant([2, 2, 2, 2], dtype=tf.double)
     assert iou(test1, test2) == 1/7
     
     test1 = [[1, 1, 0.5, 0.45, 0.4, 0.5],
