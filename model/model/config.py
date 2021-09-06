@@ -1,6 +1,1 @@
-config = {
-    'architecture' : 
-        [
-            
-        ]
-}
+config = {"architecture": []}
