@@ -1,27 +1,66 @@
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-
-from config import *
-from model import get_model
+from model.train import train
+import argparse
 
 
-def train(num_classes: int,
-          learning_rate: float,
-          epochs: int,
-          batch_size: int) -> keras.Model:
+def get_args():
+    parser = argparse.ArgumentParser(
+        description="Model training",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "-l",
+        "--lr",
+        type=float,
+        help="Learning rate",
+        dest="lr",
+        default=0.001
+    )
 
-    model = get_model(num_classes)
+    parser.add_argument(
+        "-e",
+        "--epochs",
+        type=int,
+        help="Epochs",
+        dest="epochs",
+        default=50
+    )
 
-    model.compile(optimizer= keras.optimizers.Adam(learning_rate=learning_rate),
-                  loss= keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                  )
+    parser.add_argument(
+        "-b",
+        "--batch-size",
+        type=int,
+        help="Batch size",
+        dest="batch_size",
+        default=32
+    )
+
+    parser.add_argument(
+        "-d",
+        "--data",
+        type=str,
+        help="Path to data",
+        dest="data_path"
+    )
+
+    parser.add_argument(
+        "-c",
+        "--classes",
+        type=int,
+        help="Number of classes",
+        dest="num_classes",
+        default=10,
+    )
+
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
+
+    args = get_args()
     train(
-        NUM_CLASSES,
-        LEARNING_RATE,
-        EPOCHS,
-        BATCH_SIZE
+        num_classes=args.num_classes,
+        learning_rate=args.lr,
+        epochs=args.epochs,
+        batch_size=args.batch_size,
+        data_path=args.path_data,
     )

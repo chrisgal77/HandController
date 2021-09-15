@@ -15,7 +15,9 @@ while True:
     hands, _ = detector.findHands(img)
 
     if hands:
-        pyautogui.moveTo(1920 * hands[0]['center'][0]//640, 1080 * hands[0]['center'][1]//480)
+        pyautogui.moveTo(
+            1920 * hands[0]["center"][0] // 640, 1080 * hands[0]["center"][1] // 480
+        )
 
-    cv2.imshow('a', img1)
+    cv2.imshow("a", img1)
     cv2.waitKey(1)
