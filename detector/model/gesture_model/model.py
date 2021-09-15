@@ -14,12 +14,17 @@ def get_model(num_classes: int) -> keras.Sequential:
         ]
     )
 
-    model = keras.Sequential([base, layers.Dense(32), layers.Dense(num_classes)])
+    model = keras.Sequential([
+        base,
+        layers.Dense(32),
+        layers.Dense(num_classes)
+    ])
 
     return model
 
 
 if __name__ == "__main__":
     model = get_model(num_classes=10)
-    model.build([None, 224, 224, 3])
-    model.summary()
+    result = model(tf.ones((1, 224, 224, 3)))
+
+    assert result.shape == (1, 10)

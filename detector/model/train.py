@@ -1,4 +1,4 @@
-from model.train import train
+from gesture_model import train
 import argparse
 
 
@@ -62,5 +62,5 @@ if __name__ == "__main__":
         learning_rate=args.lr,
         epochs=args.epochs,
         batch_size=args.batch_size,
-        data_path=args.path_data,
+        data_path=args.data_path,
     )

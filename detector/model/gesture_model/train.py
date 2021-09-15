@@ -1,8 +1,7 @@
 from tensorflow import keras
 
-from HandController.detector.model.model.config import *
-from model import get_model
-from dataset import get_data
+from .model import get_model
+from dataset import get_dataset
 
 
 def train(
@@ -11,7 +10,7 @@ def train(
 
     model = get_model(num_classes)
 
-    ds_train, ds_val, ds_test = get_data(data_path)
+    ds_train, ds_val, ds_test = get_dataset(data_path, batch_size, (224, 224))
 
     model.compile(
         optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
