@@ -1,0 +1,2 @@
+class FrameReadError(Exception):
+    pass
