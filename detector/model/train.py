@@ -1,6 +1,5 @@
 import argparse
 import os
-import logging
 
 from gesture_model import train
 
