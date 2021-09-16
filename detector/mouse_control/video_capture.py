@@ -12,6 +12,6 @@ class VideoCapture(cv2.VideoCapture):
         success, image = self.read()
 
         if not success:
-            raise FrameReadError('Failed to read a frame')
+            raise FrameReadError("Failed to read a frame")
 
         return cv2.flip(image, 1)

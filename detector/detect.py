@@ -1,25 +1,28 @@
+from typing import List, no_type_check
+
+import numpy as np
 from cvzone.HandTrackingModule import HandDetector
-import cv2
-from copy import copy
-import pyautogui
+
+from .model import get_pretrained
 
 
-def run():
-    cap = cv2.VideoCapture(0)
+class Detector:
+    def __init__(self, weigths_path: str, num_classes: int = 3):
+        self.hand_detector = HandDetector(maxHands=2, detectionCon=0.5)
 
-    detector = HandDetector(detectionCon=0.5, maxHands=1)
+        self.classifier = get_pretrained(weigths_path, num_classes)
 
-    while True:
-        success, img = cap.read()
-        print(img.shape)
-        img = cv2.flip(img, 1)
-        img1 = copy(img)
-        hands, _ = detector.findHands(img)
+    @no_type_check
+    def detect(self, frame: np.ndarray) -> int:
+        hand, _ = self.hand_detector.findHands(frame)
+        if hand:
+            return np.argmax(self.classifier(self._apply_bbox(hand[0])), axis=-1)
 
-        if hands:
-            pyautogui.moveTo(
-                1920 * hands[0]["center"][0] // 640, 1080 * hands[0]["center"][1] // 480
-            )
+        return -1
 
-        cv2.imshow("a", img1)
-        cv2.waitKey(1)
+    def _apply_bbox(self, frame: np.ndarray, bbox: dict) -> np.ndarray:
+        xmin, ymin, width, height = bbox["bbox"]
+        return frame[
+            ymin - 20 : ymin + height + 20,
+            xmin - 20 : width + width + 20,
+        ]

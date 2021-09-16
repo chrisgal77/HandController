@@ -54,12 +54,12 @@ def get_args():
     )
 
     parser.add_argument(
-        '-lo',
-        '--logs',
+        "-lo",
+        "--logs",
         type=str,
-        help='Path for logs and checkpoints',
-        dest='logs_path',
-        default=str(os.path.dirname(__file__))
+        help="Path for logs and checkpoints",
+        dest="logs_path",
+        default=str(os.path.dirname(__file__)),
     )
 
     return parser.parse_args()
@@ -74,5 +74,5 @@ if __name__ == "__main__":
         epochs=args.epochs,
         batch_size=args.batch_size,
         data_path=args.data_path,
-        logs_path=args.logs_path
+        logs_path=args.logs_path,
     )

@@ -38,8 +38,14 @@ def run(path):
                     cv2.imwrite(
                         f"{path}/{iterator}.png",
                         image[
-                            hand["bbox"][1] - 20: hand["bbox"][1] + hand["bbox"][3] + 20,
-                            hand["bbox"][0] - 20: hand["bbox"][0] + hand["bbox"][2] + 20
+                            hand["bbox"][1]
+                            - 20 : hand["bbox"][1]
+                            + hand["bbox"][3]
+                            + 20,
+                            hand["bbox"][0]
+                            - 20 : hand["bbox"][0]
+                            + hand["bbox"][2]
+                            + 20,
                         ],
                     )
                 iterator += 1
