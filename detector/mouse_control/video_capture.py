@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from exceptions import FrameReadError
+from .exceptions import FrameReadError
 
 
 class VideoCapture(cv2.VideoCapture):
@@ -13,5 +13,7 @@ class VideoCapture(cv2.VideoCapture):
 
         if not success:
             raise FrameReadError("Failed to read a frame")
+
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         return cv2.flip(image, 1)

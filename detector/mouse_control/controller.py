@@ -10,6 +10,11 @@ class Controller:
         x, y = point
         pyautogui.moveTo(self.width * x, self.height * y)
 
-    @staticmethod
     def click(self) -> None:
         pyautogui.click()
+
+    def action(self, action: int, point: Tuple[int, int]) -> None:
+        if action == 0:
+            self.move(point)
+        elif action == 1:
+            self.click()

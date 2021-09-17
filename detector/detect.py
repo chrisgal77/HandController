@@ -1,9 +1,9 @@
-from typing import List, no_type_check
+from typing import List, Tuple, no_type_check
 
 import numpy as np
 from cvzone.HandTrackingModule import HandDetector
 
-from .model import get_pretrained
+from model import get_pretrained
 
 
 class Detector:
@@ -13,10 +13,10 @@ class Detector:
         self.classifier = get_pretrained(weigths_path, num_classes)
 
     @no_type_check
-    def detect(self, frame: np.ndarray) -> int:
+    def detect(self, frame: np.ndarray) -> Tuple[int, Tuple[int, int]]:
         hand, _ = self.hand_detector.findHands(frame)
         if hand:
-            return np.argmax(self.classifier(self._apply_bbox(hand[0])), axis=-1)
+            return np.argmax(self.classifier(self._apply_bbox(hand[0])), axis=-1), hand[0]['center']
 
         return -1
 

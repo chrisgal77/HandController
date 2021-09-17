@@ -1,25 +1,58 @@
-from cvzone.HandTrackingModule import HandDetector
-import cv2
-from copy import copy
-import pyautogui
+from typing import Tuple
+import argparse
+
+from mouse_control import (
+    Controller, VideoCapture
+)
+from detect import Detector
 
 
-def run():
-    cap = cv2.VideoCapture(0)
+def get_args():
+    parser = argparse.ArgumentParser(
+        description="HAND CONTROLLER",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "-w",
+        "--weights",
+        type=str,
+        help="Weights path",
+        dest="weights_path"
+    )
 
-    detector = HandDetector(detectionCon=0.5, maxHands=1)
+    parser.add_argument(
+        "-c",
+        "--classes",
+        type=int,
+        help="Number of classes",
+        dest="num_classes"
+    )
 
+    return parser.parse_args()
+
+
+def init(weights_path: str, num_classes: int = 3) -> Tuple[Detector,
+                                                           Controller,
+                                                           VideoCapture]:
+    detector = Detector(weights_path, num_classes)
+    controller = Controller()
+    video_capture = VideoCapture(0)
+
+    return detector, controller, video_capture
+
+
+def run(weights_path: str, num_classes: int = 3):
+    detector, controller, video_capture = init(weights_path, num_classes)
     while True:
-        success, img = cap.read()
-        print(img.shape)
-        img = cv2.flip(img, 1)
-        img1 = copy(img)
-        hands, _ = detector.findHands(img)
+        frame = video_capture()
+        action, hand_point = detector.detect(frame)
+        controller.action(action, hand_point)
 
-        if hands:
-            pyautogui.moveTo(
-                1920 * hands[0]["center"][0] // 640, 1080 * hands[0]["center"][1] // 480
-            )
 
-        cv2.imshow("a", img1)
-        cv2.waitKey(1)
+if __name__ == "__main__":
+    args = get_args()
+
+    run(
+        weights_path=args.weights_path,
+        num_classes=args.num_classes
+    )
