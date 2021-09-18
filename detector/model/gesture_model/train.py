@@ -50,11 +50,7 @@ def train(
         callbacks=callbacks,
     )
 
-<<<<<<< HEAD
-    model.save_weights(os.path.join(logs_path, 'checkpoint/model.h5'))
-=======
     model.save_weights(os.path.join(logs_path, "checkpoint/last/"))
->>>>>>> a6418ad4aa37f0fea34706558df647ff4fcc72c4
 
     model.evaluate(ds_test)
     
