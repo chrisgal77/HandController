@@ -15,6 +15,8 @@ class Controller:
 
     def action(self, action: int, point: Tuple[int, int]) -> None:
         if action == 0:
-            self.move(point)
+            print(f'move {point}')
+            #self.move(point)
         elif action == 1:
-            self.click()
+            print('click')
+            #self.click()

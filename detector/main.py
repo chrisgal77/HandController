@@ -1,6 +1,8 @@
 from typing import Tuple
 import argparse
 
+import cv2
+
 from mouse_control import (
     Controller, VideoCapture
 )
@@ -45,8 +47,13 @@ def run(weights_path: str, num_classes: int = 3):
     detector, controller, video_capture = init(weights_path, num_classes)
     while True:
         frame = video_capture()
-        action, hand_point = detector.detect(frame)
-        controller.action(action, hand_point)
+        output = detector.detect(frame)
+        try:
+            action, hand_point = output
+            controller.action(action, hand_point)
+        except TypeError:
+            action = output
+            controller.action(action, (-1, -1))
 
 
 if __name__ == "__main__":
