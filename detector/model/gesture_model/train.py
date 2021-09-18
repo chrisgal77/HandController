@@ -3,11 +3,16 @@ from tensorflow import keras
 import os
 
 from .model import get_model
-from dataset import get_dataset
+from ..dataset import get_dataset
 
 
 def train(
-    num_classes: int, learning_rate: float, epochs: int, batch_size: int, data_path: str, logs_path: str
+    num_classes: int,
+    learning_rate: float,
+    epochs: int,
+    batch_size: int,
+    data_path: str,
+    logs_path: str,
 ) -> keras.Model:
 
     model = get_model(num_classes)
@@ -16,19 +21,19 @@ def train(
 
     callbacks = [
         tf.keras.callbacks.TensorBoard(
-            log_dir=os.path.join(logs_path, 'logs/'),
+            log_dir=os.path.join(logs_path, "logs/"),
             histogram_freq=0,
             write_graph=True,
-            update_freq='epoch'
+            update_freq="epoch",
         ),
         tf.keras.callbacks.ModelCheckpoint(
-            os.path.join(logs_path, 'checkpoints/checkpoint_best/'),
-            monitor='val_loss',
+            os.path.join(logs_path, "checkpoints/checkpoint_best/"),
+            monitor="val_loss",
             save_best_only=True,
             save_weights_only=True,
-            mode='min',
-            save_freq='epoch'
-        )
+            mode="min",
+            save_freq="epoch",
+        ),
     ]
 
     model.compile(
@@ -42,10 +47,14 @@ def train(
         validation_data=ds_val,
         batch_size=batch_size,
         epochs=epochs,
-        callbacks=callbacks
+        callbacks=callbacks,
     )
 
+<<<<<<< HEAD
     model.save_weights(os.path.join(logs_path, 'checkpoint/model.h5'))
+=======
+    model.save_weights(os.path.join(logs_path, "checkpoint/last/"))
+>>>>>>> a6418ad4aa37f0fea34706558df647ff4fcc72c4
 
     model.evaluate(ds_test)
     
