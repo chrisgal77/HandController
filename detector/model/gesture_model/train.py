@@ -45,6 +45,8 @@ def train(
         callbacks=callbacks
     )
 
-    model.save_weights(os.path.join(logs_path, 'checkpoint/last/'))
+    model.save_weights(os.path.join(logs_path, 'checkpoint/model.h5'))
 
+    model.evaluate(ds_test)
+    
     return history
