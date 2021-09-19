@@ -14,9 +14,9 @@ class Controller:
         pyautogui.click()
 
     def action(self, action: int, point: Tuple[int, int]) -> None:
-        if action == 0:
-            print(f'move {point}')
+        if action == 1:
+            pass
             #self.move(point)
-        elif action == 1:
-            print('click')
+        elif action != 1:
+            pass
             #self.click()

@@ -25,7 +25,7 @@ def run(path):
 
     detector = HandDetector(detectionCon=0.8, maxHands=2)
 
-    iterator = 0
+    iterator = 1150
     while True:
         success, img = cap.read()
         img = cv2.flip(img, 1)
@@ -34,7 +34,7 @@ def run(path):
 
         if hands:
             for hand in hands:
-                if iterator % 30 == 0:
+                if iterator % 10 == 0:
                     cv2.imwrite(
                         f"{path}/{iterator}.png",
                         image[

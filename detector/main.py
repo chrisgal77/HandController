@@ -55,6 +55,9 @@ def run(weights_path: str, num_classes: int = 3):
             action = output
             controller.action(action, (-1, -1))
 
+        cv2.imshow('abc', frame)
+        cv2.waitKey(1)
+
 
 if __name__ == "__main__":
     args = get_args()
