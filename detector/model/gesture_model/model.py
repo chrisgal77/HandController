@@ -17,7 +17,7 @@ def get_model(num_classes: int) -> keras.Sequential:
     model = keras.Sequential([
         base,
         layers.Dense(32, activation='relu'),
-        layers.Dense(num_classes, activation='softmax')
+        layers.Dense(num_classes)
     ])
 
     return model

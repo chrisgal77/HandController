@@ -35,7 +35,7 @@ def get_pretrained(weights_path, num_classes):
     if not os.path.exists(weights_path):
         raise FileNotFoundError
 
-    test = model(tf.zeros((1,224,224,3)))
+    test = model(tf.zeros((1, 224, 224, 3)))
     model.load_weights(weights_path)
 
     return model

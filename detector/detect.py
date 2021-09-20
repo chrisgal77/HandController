@@ -17,7 +17,6 @@ class Detector:
     def detect(self, frame: np.ndarray) -> Tuple[int, Tuple[int, int]]:
         hand, _ = self.hand_detector.findHands(frame)
         if hand:
-            print(self.classifier(self._apply_bbox(frame, hand[0])))
             return (
                 np.argmax(self.classifier(self._apply_bbox(frame, hand[0])), axis=-1),
                 hand[0]["center"],
@@ -28,8 +27,8 @@ class Detector:
     def _apply_bbox(self, frame: np.ndarray, bbox: dict) -> np.ndarray:
         xmin, ymin, width, height = bbox["bbox"]
         frame = frame[
-            ymin: ymin + height,
-            xmin: xmin + width,
+            np.clip(ymin - 20, 0, 10000): ymin + height + 20,
+            np.clip(xmin - 20, 0, 10000): xmin + width + 20,
         ]
-
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         return np.reshape(cv2.resize(frame, (224, 224), interpolation=cv2.INTER_AREA), (1, 224, 224, 3))

@@ -25,7 +25,7 @@ def run(path):
 
     detector = HandDetector(detectionCon=0.8, maxHands=2)
 
-    iterator = 1150
+    iterator = 0
     while True:
         success, img = cap.read()
         img = cv2.flip(img, 1)

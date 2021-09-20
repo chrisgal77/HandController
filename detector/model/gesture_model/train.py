@@ -38,7 +38,7 @@ def train(
 
     model.compile(
         optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
-        loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        loss=keras.losses.CategoricalCrossentropy(from_logits=True),
         metrics=["accuracy"],
     )
 

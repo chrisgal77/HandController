@@ -8,15 +8,15 @@ class Controller:
 
     def move(self, point: Tuple[int, int]) -> None:
         x, y = point
-        pyautogui.moveTo(self.width * x, self.height * y)
+        pyautogui.moveTo(self.width * x / 480, self.height * y / 360)
 
     def click(self) -> None:
         pyautogui.click()
 
     def action(self, action: int, point: Tuple[int, int]) -> None:
-        if action == 1:
-            pass
-            #self.move(point)
-        elif action != 1:
-            pass
+        if action == 0:
+            print('move')
+            self.move(point)
+        elif action == 1:
+            print('click')
             #self.click()
