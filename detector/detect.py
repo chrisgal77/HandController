@@ -1,4 +1,4 @@
-from typing import Tuple, no_type_check
+from typing import Tuple, Union
 
 import cv2
 import numpy as np
@@ -13,12 +13,11 @@ class Detector:
 
         self.classifier = get_pretrained(weigths_path, num_classes)
 
-    @no_type_check
-    def detect(self, frame: np.ndarray) -> Tuple[int, Tuple[int, int]]:
+    def detect(self, frame: np.ndarray) -> Union[Tuple[int, Tuple[int, int]], int]:
         hand, _ = self.hand_detector.findHands(frame)
         if hand:
             return (
-                np.argmax(self.classifier(self._apply_bbox(frame, hand[0])), axis=-1),
+                int(np.argmax(self.classifier(self._apply_bbox(frame, hand[0])), axis=-1)),
                 hand[0]["center"],
             )
 
